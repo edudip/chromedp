@@ -90,6 +90,10 @@ type Context struct {
 	// entire browser and its handler, and not just a portion of its pages.
 	first bool
 
+	// dontClose configures whether the browser or the tab should be closed
+	// after the context was canceled.
+	dontClose bool
+
 	// closedTarget allows waiting for a target's page to be closed on
 	// cancellation.
 	closedTarget sync.WaitGroup
@@ -196,7 +200,7 @@ func NewContext(parent context.Context, opts ...ContextOption) (context.Context,
 				c.cancelErr = err
 			}
 		}
-		if id := c.Target.TargetID; id != "" {
+		if id := c.Target.TargetID; !c.dontClose && id != "" {
 			action := target.CloseTarget(id)
 			if err := action.Do(browserExecutor); c.cancelErr == nil && err != nil {
 				c.cancelErr = err
@@ -516,6 +520,10 @@ func WithExistingBrowserContext(id cdp.BrowserContextID) ContextOption {
 		}
 		c.BrowserContextID = id
 	}
+}
+
+func WithDontClose() ContextOption {
+	return func(c *Context) { c.dontClose = true }
 }
 
 // WithLogf is a shortcut for WithBrowserOption(WithBrowserLogf(f)).
