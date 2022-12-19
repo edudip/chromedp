@@ -10,7 +10,7 @@ import (
 	"flag"
 	"fmt"
 	"go/format"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"regexp"
@@ -81,11 +81,11 @@ func run(out string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(out, src, 0o644)
+	return os.WriteFile(out, src, 0o644)
 }
 
 var (
-	startRE        = regexp.MustCompile(`(?m)^const\s+devices:\s*Device\[\]\s*=\s*\[`)
+	startRE        = regexp.MustCompile(`(?m)^const\s+deviceArray:\s*Device\[\]\s*=\s*\[`)
 	endRE          = regexp.MustCompile(`(?m)^\];`)
 	fixLandscapeRE = regexp.MustCompile(`isLandscape:\s*(true|false),`)
 	fixKeysRE      = regexp.MustCompile(`(?m)^(\s+)([a-zA-Z]+):`)
@@ -108,7 +108,7 @@ func get(v interface{}) error {
 	if res.StatusCode != 200 {
 		return fmt.Errorf("got status code %d", res.StatusCode)
 	}
-	buf, err := ioutil.ReadAll(res.Body)
+	buf, err := io.ReadAll(res.Body)
 	if err != nil {
 		return err
 	}
